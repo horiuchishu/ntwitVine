@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= title %></title>
+     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
+    <!-- Socket.IOのJSファイルをインポートする -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script type="text/javascript">
+    var socket = io.connect();
+    //
+    var maxVideos = 15;
+    var videos = [];
+    //
+    socket.on('message:receive', function (data) {
+        var video = $("<video id='post_html5_api' class='v-clip' loop='' preload='auto' src='"+data.message+"' muted autoplay></video>");
+        $("body #video-wrapper").prepend(video);
+        $(video).attr("id", Math.random());
+        //
+        videos.push(video);
+        //
+        if(videos.length > maxVideos){
+            video = videos.shift();
+            $(video).remove();
+        }
+    });
+    $(function(){
+        
+    });
+    </script>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+  </head>
+  <body>
+    <div id="video-wrapper">
+        
+    </div>
+  </body>
+</html>

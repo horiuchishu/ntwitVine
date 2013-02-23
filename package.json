@@ -12,6 +12,9 @@
     "ntwitter": "*",
     "request":"*",
     "cheerio":"*",
-    "socket.io":"*"
+    "socket.io":"*",
+    "mongoose":"*",
+    "cron":"*",
+    "time":"*"
   }
 }

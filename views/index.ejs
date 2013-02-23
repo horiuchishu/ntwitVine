@@ -1,37 +1,63 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
   <head>
+    <meta charset="utf-8">
     <title><%= title %></title>
-     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+    <!--[if lt IE 9]>
+    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <!-- Le styles -->
+    <link href="/stylesheets/bootstrap.min.css" rel="stylesheet">
+    <!-- <link href="/stylesheets/bootstrap-responsive.css" rel="stylesheet"> -->
+    <!-- + + + + + + + + + + + + + + + + + + + + -->
     <!-- Socket.IOのJSファイルをインポートする -->
     <script src="/socket.io/socket.io.js"></script>
-    <script type="text/javascript">
-    var socket = io.connect();
-    //
-    var maxVideos = 15;
-    var videos = [];
-    //
-    socket.on('message:receive', function (data) {
-        var video = $("<video id='post_html5_api' class='v-clip' loop='' preload='auto' src='"+data.message+"' muted autoplay></video>");
-        $("body #video-wrapper").prepend(video);
-        $(video).attr("id", Math.random());
-        //
-        videos.push(video);
-        //
-        if(videos.length > maxVideos){
-            video = videos.shift();
-            $(video).remove();
-        }
-    });
-    $(function(){
-        
-    });
-    </script>
-    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <link rel='stylesheet' href='/stylesheets/tweet.css' />
   </head>
-  <body>
-    <div id="video-wrapper">
-        
+  <body class="container">
+    <div class="page-header">
+        <h1>Tweet View</h1>
     </div>
-  </body>
+    <% for(var o in tweets){ %>
+    <div class="tweet well media">
+        <img class="media-object pull-left" src="<%= tweets[o]['user']['profile_image_url'] %>" />
+        <div class="media-body">
+            <h4 class="media-heading"><%= tweets[o]['user']['name'] %><span>@<%= tweets[o]['user']['screen_name'] %></span></h4>
+        <p><%= tweets[o]['text'] %></p>
+        <span><%= tweets[o]['created_at'] %></span>
+        </div>
+    </div>
+    <% } %>
+<!-- ================================================== -->
+<!-- JavaScript -->
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+<script type="text/javascript" src="/javascripts/bootstrap.min.js"></script>
+<!-- js -->
+<script type="text/javascript">
+var socket = io.connect();
+//
+socket.on('message:tweet', function (data) {
+    //
+    //var tweet = $.parseJSON(data.message);
+    var tweet = data.message;
+    //
+    var domStr = '<div class="tweet well media">';
+    domStr += '<img class="media-object pull-left" src="'+tweet['user']['profile_image_url']+'" />';
+    domStr += '<div class="media-body">';
+    domStr += '<h4 class="media-heading">'+tweet['user']['name']+'<span>@'+tweet['user']['screen_name']+'</span></h4>';
+    domStr += '<p>'+tweet['text']+'</p>';
+    domStr += '<span>'+tweet['created_at']+'</span>';
+    domStr += '</div>';
+    //
+    $("body.container div.page-header").after($(domStr));
+});
+$(function(){
+
+});
+</script>
+
+</body>
 </html>

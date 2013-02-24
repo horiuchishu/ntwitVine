@@ -28,10 +28,12 @@ var express = require('express')
 /**
  * ツイッター関係
  **/
-tw.stream('statuses/sample', function(stream) {
-  stream.on('data', function (data) {
-    console.log(data);
-  });
+//haraguchi account
+var tw = new twitter({  
+  consumer_key: '',
+  consumer_secret: '',
+  access_token_key: '',
+  access_token_secret: ''
 });
 //
 var mongoUser = require('./model/tweet');
@@ -41,9 +43,8 @@ var tweetModel = mongoUser.tweet;
 var htag = 'nhk';
 //ストリームを使う
 tw.stream('statuses/filter', {'track':htag}, function(stream){
-    //return;
 //tw.stream('statuses/filter', {'track':'2_5_d'}, function(stream){
-//tw.stream('statuses/filter', {'track':'vine'}, function(stream){
+    //return;
     stream.on('data', function(data){
         //
         var isTag = false;
@@ -68,24 +69,25 @@ tw.stream('statuses/filter', {'track':htag}, function(stream){
                     }else{
                         //未登録なので、ユーザーをDBに追加
                         user = new userModel(data.user);
-                        user.save(function(err){
-                           if(err){
-                               console.log(err);
-                           } else{
-                               //ツイートの保存
-                               var tweet = new tweetModel(data);
-                               tweet.user = user;
-                               tweet.save(function(err){
-                                   //エラー／上手く行った場合は何もしない
-                                   if(err){
-                                       console.log(err);
-                                   }else{
-                                       io.sockets.emit('message:tweet', {message:data})
-                                   }
-                               })
-                           }
-                        });
                     }
+                    //ユーザーをセーブ
+                    user.save(function(err){
+                       if(err){
+                           console.log(err);
+                       } else{
+                           //ツイートの保存
+                           var tweet = new tweetModel(data);
+                           tweet.user = user;
+                           tweet.save(function(err){
+                               //エラー／上手く行った場合は何もしない
+                               if(err){
+                                   console.log(err);
+                               }else{
+                                   io.sockets.emit('message:tweet', {message:data})
+                               }
+                           })
+                       }
+                    });
                 }
             });
             // - - - - - - - - - - - - - - - - - - - -
@@ -114,14 +116,15 @@ tw.stream('statuses/filter', {'track':htag}, function(stream){
     });
 });
 // cronでdbを整理する
-//
-var maxTweets = 100;
+//ツイートの最大保存数
+var maxTweets = 500;
 //
 var job = new cron({
     //実行したい日時 or crontab書式
-    cronTime: "* */1 * * *"
+    cronTime: "*/1 * * * *"
     //指定時に実行したい関数
     , onTick: function() {
+        //ツイートを削除する
         tweetModel.find().count(function(err, cnt){
             console.log(cnt);
             //保存数が最大値を超えていたら削除する
@@ -140,6 +143,21 @@ var job = new cron({
                 });
             }
         });
+        // 余計なユーザーを削除する
+        userModel.find().exec(function(err, users){
+            for(var u in users){
+                // Promiseオブジェクトを取得
+                var pro = tweetModel.findOne({user:users[u]['_id']}).exec();
+                // スコープがあるので、オブジェクトに入れる
+                pro.userId = users[u]['_id'];
+                // proにuserIdを指定したら読めた。スコープの関係クリア
+                pro.on("complete", function(tweet){
+                    if(!tweet){
+                        userModel.findByIdAndRemove(this.userId).exec();
+                    }
+                });
+            }
+        })
     }
     //ジョブの完了または停止時に実行する関数 
     , onComplete: function() {
@@ -177,6 +195,7 @@ app.configure('development', function(){
 //
 app.get('/', routes.index);
 //
+app.get('/manage', routes.manage);
 //
 var server = http.createServer(app).listen(app.get('port'), function(){
   console.log("Express server listening on port " + app.get('port'));

@@ -40,10 +40,10 @@ var mongoUser = require('./model/tweet');
 var userModel = mongoUser.user;
 var tweetModel = mongoUser.tweet;
 //
-var htag = 'nhk';
+//var htag = 'vine';
+var htag = '2_5_d';
 //ストリームを使う
 tw.stream('statuses/filter', {'track':htag}, function(stream){
-//tw.stream('statuses/filter', {'track':'2_5_d'}, function(stream){
     //return;
     stream.on('data', function(data){
         //
@@ -57,12 +57,11 @@ tw.stream('statuses/filter', {'track':htag}, function(stream){
         }
         //
         if(isTag){
-            //console.log(data);
             // - - - - - - - - - - - - - - - - - - - -
             //ユーザーの検索
             userModel.findOne({id:data.user.id}).exec(function(err, user){
                 if(err){
-                    
+                    //エラー
                 }else{
                     if(user){
                         //登録済み
@@ -75,22 +74,72 @@ tw.stream('statuses/filter', {'track':htag}, function(stream){
                        if(err){
                            console.log(err);
                        } else{
-                           //ツイートの保存
+                           //ツイートモデルの作成
                            var tweet = new tweetModel(data);
+                           //ユーザーをドキュメントモデルとして追加
                            tweet.user = user;
-                           tweet.save(function(err){
+                           // + + + + +
+                           //ツイート本体を保存
+                           tweet.save(function(err, newTweet){
                                //エラー／上手く行った場合は何もしない
                                if(err){
                                    console.log(err);
                                }else{
-                                   io.sockets.emit('message:tweet', {message:data})
+                                   //userがドキュメントモデルなので、dataを使う。
+                                   io.sockets.emit('message:tweet', {message:data});
+                                   // vineかinstaを保存
+                                   // + + + + + + + + + + + + + + + + + + + +
+                                   // vineからパスを取得して保存
+                                   if(String(newTweet.source).indexOf("vine") > -1){
+                                       //スクレイピングするURLの取得
+                                       var url = newTweet.entities.urls[0].expanded_url;
+                                       var r = request({uri:url}, function(err, res, body){});
+                                       //スクレイピング後保存する用
+                                       r.tweetId = newTweet._id;
+                                       //完了
+                                       r.on("complete", function (res, body){
+                                           if(body){
+                                               //取得したページのbody部をパース
+                                               var $ = cheerio.load(body);
+                                               var videoSrc = $("body .card .video-container video source").attr("src");
+                                               // ソケット送信
+                                               io.sockets.emit('message:vine', {message:videoSrc});
+                                               ////dbアップデート
+                                               //画像パスをdbにも保存（既に保存済みが前提。。。）
+                                               //tweetModel.findByIdAndUpdate(this.tweetId, {source:videoSrc},function(err, updateTweet){});
+                                               tweetModel.findByIdAndUpdate(this.tweetId, {source_url:videoSrc},function(err, updateTweet){});
+                                           }
+                                       });
+                                   // + + + + + + + + + + + + + + + + + + + +
+                                   // インスタグラムから画像パスを取得
+                                   }else if(String(newTweet.source).indexOf("instagram") > -1){
+                                       //スクレイピングするURLの取得
+                                       var url = newTweet.entities.urls[0].expanded_url;
+                                       var r = request({uri:url}, function(err, res, body){});
+                                       //スクレイピング後保存する用
+                                       r.tweetId = newTweet._id;
+                                       //完了
+                                       r.on("complete", function (res, body){
+                                           if(body){
+                                               // ソケット送信
+                                               var $ = cheerio.load(body); //取得したページのbody部をパース
+                                               var imgSrc = $("#media_photo img.photo").attr("src");
+                                               io.sockets.emit('message:instagram', {message:imgSrc});
+                                               //dbアップデート
+                                               //画像パスをdbにも保存（既に保存済みが前提。。。）
+                                               //tweetModel.findByIdAndUpdate(this.tweetId, {source:imgSrc},function(err, updateTweet){});
+                                               tweetModel.findByIdAndUpdate(this.tweetId, {source_url:imgSrc},function(err, updateTweet){});
+                                           }
+                                       });
+                                   }
                                }
-                           })
+                           });
                        }
                     });
                 }
             });
             // - - - - - - - - - - - - - - - - - - - -
+            /*
             //vineリンクを確認
             if(String(data.source).indexOf('vine.co') > -1){
                 //urlを取得
@@ -106,12 +155,10 @@ tw.stream('statuses/filter', {'track':htag}, function(stream){
                         //console.log(body);
                         //videoタグの取得
                         var videoSrc = $("body .card .video-container video source").attr("src");
-                        io.sockets.emit('message:receive', {message: videoSrc});
-                        //var tag = '<video id="post_html5_api" class="v-clip" loop="" preload="auto" src="'+videoSrc+'" muted></video>';
-                        //io.sockets.emit('message:receive', { message: tag });
-                        //console.log(videoTag.toString());
+                        io.sockets.emit('message:vine', {message: videoSrc});
                 });
             };
+            */
         };
     });
 });
@@ -121,7 +168,7 @@ var maxTweets = 500;
 //
 var job = new cron({
     //実行したい日時 or crontab書式
-    cronTime: "*/1 * * * *"
+    cronTime: "00 0-23/4 * * *"
     //指定時に実行したい関数
     , onTick: function() {
         //ツイートを削除する
@@ -166,7 +213,7 @@ var job = new cron({
     // コンストラクタを終する前にジョブを開始するかどうか
     , start: false
     //タイムゾーン
-    , timeZone: "Japan/Tokyo"
+    //, timeZone: "Japan/Tokyo"
 })
  
 //ジョブ開始
@@ -196,6 +243,10 @@ app.configure('development', function(){
 app.get('/', routes.index);
 //
 app.get('/manage', routes.manage);
+//
+app.get('/vine', routes.vine);
+//
+app.get('/instagram', routes.instagram);
 //
 var server = http.createServer(app).listen(app.get('port'), function(){
   console.log("Express server listening on port " + app.get('port'));

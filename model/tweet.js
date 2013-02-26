@@ -2,8 +2,8 @@
  * twitterのデータを保存するモデル
  */
 var mongoose = require('mongoose');
-//
-var db = mongoose.connect('mongodb://localhost/twitter');
+// local
+//var db = mongoose.connect('mongodb://localhost/twitter');
 //
 /**
  * tweet
@@ -14,6 +14,7 @@ var tweet = new mongoose.Schema({
     id_str: {type:String},
     text: {type:String},
     source: {type:String},
+    source_url: {type:String},   //ソースの元ファイルURL
     truncated: {type:Boolean},
     in_reply_to_status_id: {type:Number},
     in_reply_to_status_id_str: {type:String},

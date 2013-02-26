@@ -2,8 +2,11 @@
 /*
  * GET home page.
  */
-//
+// db
 var mongoose = require('mongoose');
+// スクレイピング関係
+var request = require('request');
+var cheerio = require('cheerio');
 // --------------------------------------------------
 var pageTweets = 30;
 // --------------------------------------------------
@@ -32,6 +35,7 @@ exports.manage = function (req, res){
     }
     //
     tweetModel.find().count(function (err, count){
+        //
         tweetModel.find().sort({created_at:-1}).skip(skipTweet).limit(pageTweets).populate('user').exec(function(err, tweets){
             //
             res.render('manage',{
@@ -39,6 +43,34 @@ exports.manage = function (req, res){
                 count:Math.ceil(count / pageTweets),
                 title:'Manage'
             });
+        });
+    });
+}
+// --------------------------------------------------
+// 
+exports.instagram = function (req, res){
+    //
+    var tweetModel = mongoose.model("Tweet");
+    //
+    tweetModel.find({source:/instagram/}).sort({created_at:-1}).limit(pageTweets).exec(function(err, tweets){
+        //
+        res.render('instagram',{
+           title:"instagram view",
+           tweets:tweets
+        });
+    });
+}
+// --------------------------------------------------
+//
+exports.vine = function (req, res){
+    //
+    var tweetModel = mongoose.model("Tweet");
+    //
+    tweetModel.find({source:/vine/}).sort({created_at:-1}).limit(pageTweets).exec(function(err, tweets){
+        //
+        res.render('vine',{
+           title:"vine view",
+           tweets:tweets
         });
     });
 }

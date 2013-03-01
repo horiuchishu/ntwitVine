@@ -5,3 +5,104 @@
     Description:
         Purpose of the stylesheet follows.
 */
+body {
+	-webkit-perspective: 700px;
+}
+#tweetline{
+position:absolute;
+z-index: 9999;
+top:50px;
+left: -30px;
+
+-webkit-transform-style: preserve-3d;           /* 3D表現使用する */
+-webkit-transform: rotateY(50deg);
+/*
+pointer-events:none;
+*/
+
+}
+@-webkit-keyframes turnY{
+0%{-webkit-transform: rotateY(0deg);}
+100%{-webkit-transform: rotateY(360deg);}
+}
+
+#tweetline:hover{
+-webkit-animation-name: turnY;
+-webkit-animation-duration: 2s;
+-webkit-animation-iteration-count: 1;
+opacity:0.5;
+}
+#stream{
+position: absolute;
+z-index: 10;
+
+
+}
+#social_stream{
+position: absolute;
+-webkit-transform-style: preserve-3d;           /* 3D表現使用する */
+-webkit-transform: rotateY(-15deg);
+z-index: 10;
+margin-top: 30px;
+}
+
+.tweet p{
+color: #FFFFFF;
+font-size: 16px;
+line-height: 25px;
+text-shadow: -15px 5px 5px #000;
+opacity: 0.7;
+}
+.tweet{
+width: 390px;
+height: auto;
+}
+.media-heading{
+color: #FFFFFF;
+font-size: 15px;
+}
+.date{
+color: green;
+font-size: 9px;
+}
+#tweetlineback{
+position: absolute;
+top:-50px;
+margin-left: -180px;
+z-index: 1;
+height: 1000px;
+width: 1600px;
+overflow-y: hidden;
+opacity: 0.3;
+}
+#tweetlineback .tweet{
+float: left;
+width: 150px;
+height: 50px;
+overflow-y: hidden;
+margin-bottom: 10px;
+}
+#tweetlineback .tweet img{
+width: 13px;
+}
+#tweetlineback .tweet p{
+font-size:0.05em;
+line-height: 10px;
+color: #CCCCCC;
+text-shadow: -1px 1px 1px #000;
+
+}
+#tweetlineback .media-heading{
+color: #FFFFFF;
+font-size: 0.1em;
+margin-bottom: 3px;
+line-height: 10px;
+
+}
+
+#tweetlineback .well {
+  min-height: 20px;
+  padding: 5px;
+  margin-bottom: 1px;
+  
+}

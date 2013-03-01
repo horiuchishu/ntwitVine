@@ -20,3 +20,12 @@ a {
     width:270px;
     height:270px;
 }
+
+#stream{
+position: fixed;
+z-index: 1;
+}
+
+#tweetline{
+z-index: 100;
+}

@@ -6,13 +6,13 @@
         Purpose of the stylesheet follows.
 */
 body {
-	-webkit-perspective: 700px;
+	-webkit-perspective: 1000px;
 }
 #tweetline{
 position:absolute;
 z-index: 9999;
 top:50px;
-left: -30px;
+left: -90px;
 
 -webkit-transform-style: preserve-3d;           /* 3D表現使用する */
 -webkit-transform: rotateY(50deg);
@@ -41,16 +41,16 @@ z-index: 10;
 #social_stream{
 position: absolute;
 -webkit-transform-style: preserve-3d;           /* 3D表現使用する */
--webkit-transform: rotateY(-15deg);
+
 z-index: 10;
 margin-top: 30px;
 }
 
 .tweet p{
 color: #FFFFFF;
-font-size: 16px;
+font-size: 18px;
 line-height: 25px;
-text-shadow: -15px 5px 5px #000;
+text-shadow: -3px 3px 3px #000;
 opacity: 0.7;
 }
 .tweet{
@@ -105,4 +105,14 @@ line-height: 10px;
   padding: 5px;
   margin-bottom: 1px;
   
+}
+
+#hidebtn{
+width: 100px;
+height: 100px;
+position: absolute;
+z-index: 9999;
+top:0px;
+right: -100px;
+background-color: aqua;
 }

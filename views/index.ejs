@@ -22,13 +22,12 @@
     </div>
     <div id="tweetline">
     
-    <% for(var o in tweets){ %>
+    <% for(var o=0;o<6;o++){ %>
     <div class="tweet well media">
         <img class="media-object pull-left" src="<%= tweets[o]['user']['profile_image_url'] %>" />
         <div class="media-body">
             <h4 class="media-heading"><%= tweets[o]['user']['name'] %><span>@<%= tweets[o]['user']['screen_name'] %></span></h4>
         <p><%= tweets[o]['text'] %></p>
-        <span><%= tweets[o]['created_at'] %></span>
         </div>
     </div>
     <% } %>
@@ -47,18 +46,30 @@
         <div class="media-body">
             <h4 class="media-heading"><%= tweets[o]['user']['name'] %><span>@<%= tweets[o]['user']['screen_name'] %></span></h4>
         <p><%= tweets[o]['text'] %></p>
-        <span><%= tweets[o]['created_at'] %></span>
         </div>
     </div>
     <% } %>
 	
 	</div>
+	
+	<div id="hidebtn"></div>
 <!-- ================================================== -->
 <!-- JavaScript -->
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
 <script type="text/javascript" src="/javascripts/bootstrap.min.js"></script>
+
+<script src="/javascripts/jquery.transform.js"></script>
 <!-- js -->
 <script type="text/javascript">
+
+$("#hidebtn").click(function(){
+console.log("click!");
+$("#hidebtn").css("opacity","0");
+$('#social_stream').transform({rotateY:'-15deg'});
+
+})
+
+
 var socket = io.connect();
 var colArry=["#00c3ff",
 "#ff28b0",
@@ -167,6 +178,8 @@ $(function(){
 <script src="/javascripts/jquery.lettering.js" type="text/javascript" language="JavaScript"></script>
 <script src="/javascripts/jquery.lettering.animate.js" type="text/javascript" language="JavaScript"></script>
 <script src="/javascripts/ShuffleText.js"></script>  
+
+
 <script>
 	  	
 		  	$(document).ready(function()
